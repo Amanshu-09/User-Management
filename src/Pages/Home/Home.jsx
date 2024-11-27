@@ -1,9 +1,12 @@
 import { Button, Modal, Spin, Table } from "antd";
 import React, { useState, Suspense } from "react";
 import { EditTwoTone, DeleteTwoTone, EditOutlined, DeleteOutlined } from '@ant-design/icons'
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import app from "../../Firebase/firebase";
+import { getDatabase, ref, remove } from "firebase/database";
 import './index.scss';
 import ACL from "../../Components/ACL";
+import { setUserData } from "../../Redux/slice";
 const RegistrationForm = React.lazy(() => import('../Registration'));
 
 function Home() {
@@ -33,18 +36,24 @@ function Home() {
       dataIndex: "action",
       key: "action",
       render: (text, record) => <div className="user-table-actions">
-        {record.role === "Owner" ? <EditOutlined style={{ cursor: "not-allowed" }} /> : <EditTwoTone onClick={() => {
-          setSelectedData(record);
-          setAddModalOpen(true)
-        }} />}
-        <ACL roles={record.role === "Admin" ? ["Owner"] : ["Owner", "Admin"]}>
-          {record.role === "Owner" ? <DeleteOutlined style={{ cursor: "not-allowed" }} /> : <DeleteTwoTone twoToneColor="#eb0505" />}
-        </ACL>
+        {(currentUserData.role === "Admin" && ["Owner", "Admin"].includes(record.role) || record.role === "Owner") ? <EditOutlined style={{ cursor: "not-allowed" }} />
+          : <EditTwoTone onClick={() => {
+            setSelectedData(record);
+            setAddModalOpen(true)
+          }} />}
+        {(currentUserData.role === "Admin" && ["Owner", "Admin"].includes(record.role) || record.role === "Owner") ? <DeleteOutlined style={{ cursor: "not-allowed" }} />
+          : <DeleteTwoTone twoToneColor="#eb0505" onClick={async () => {
+            const db = getDatabase(app);
+            const UserRef = ref(db, "users/" + record.id);
+            await remove(UserRef);
+            dispatch(setUserData(userData.filter(user => user.id !== record.id)))
+          }} />}
       </div>
     },
   ]
 
   const { userData, currentUserData } = useSelector(state => state);
+  const dispatch = useDispatch();
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedData, setSelectedData] = useState({});
 
