@@ -39,7 +39,8 @@ function Home() {
         {(currentUserData.role === "Admin" && ["Owner", "Admin"].includes(record.role) || record.role === "Owner") ? <EditOutlined style={{ cursor: "not-allowed" }} />
           : <EditTwoTone onClick={() => {
             setSelectedData(record);
-            setAddModalOpen(true)
+            setAddModalOpen(true);
+            setUserType(record.role);
           }} />}
         {(currentUserData.role === "Admin" && ["Owner", "Admin"].includes(record.role) || record.role === "Owner") ? <DeleteOutlined style={{ cursor: "not-allowed" }} />
           : <DeleteTwoTone twoToneColor="#eb0505" onClick={async () => {
@@ -56,6 +57,13 @@ function Home() {
   const dispatch = useDispatch();
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedData, setSelectedData] = useState({});
+  const [userType, setUserType] = useState("");
+
+  const onCloseRegistrationFormModal = () => {
+    setAddModalOpen(false)
+    setSelectedData({});
+    setUserType('');
+  }
 
   if (!["Owner", "Admin"].includes(currentUserData.role)) {
     columns = columns.filter(col => col.key !== "action");
@@ -66,10 +74,16 @@ function Home() {
       <h1>
         Role-Based Access Control (RBAC)
       </h1>
+      <ACL roles={["Owner", "Admin"]}>
+        <Button type="primary" onClick={() => {
+          setAddModalOpen(true);
+          setUserType("View")
+        }} >Add User</Button>
+      </ACL>
       <ACL roles={["Owner"]}>
         <Button type="primary" onClick={() => {
           setAddModalOpen(true);
-          setSelectedData({});
+          setUserType("Admin")
         }} >Add Admin</Button>
       </ACL>
     </div>
@@ -80,9 +94,9 @@ function Home() {
         pagination={false}
       />
     </ACL>
-    <Modal open={addModalOpen} onCancel={() => { setAddModalOpen(false) }} footer={null} destroyOnClose={true} >
+    <Modal open={addModalOpen} onCancel={onCloseRegistrationFormModal} footer={null} destroyOnClose={true} >
       <Suspense fallback={<Spin />}>
-        <RegistrationForm req_type={Object.keys(selectedData)?.length ? "edit_user" : "add_admin"} closeAddAdmin={() => { setAddModalOpen(false) }}
+        <RegistrationForm req_type={Object.keys(selectedData)?.length ? "edit_user" : userType} onCloseRegistrationFormModal={onCloseRegistrationFormModal}
           selectedRecord={selectedData} />
       </Suspense>
     </Modal>

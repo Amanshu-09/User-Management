@@ -6,37 +6,37 @@ import { getDatabase, ref, push, set } from "firebase/database";
 import { setMenu, setUserData } from "../../Redux/slice";
 import { useDispatch, useSelector } from "react-redux";
 
-const RegistrationForm = ({ req_type, closeAddAdmin, selectedRecord }) => {
+const RegistrationForm = ({ req_type, onCloseRegistrationFormModal, selectedRecord }) => {
     const dispatch = useDispatch();
     const { userData } = useSelector(state => state);
 
-    const onFinish = (values) => {
+    const onFinish = async (values) => {
         console.log("Success:", values);
         const payload = {
             fullname: values.fullname,
-            email: values.email
+            email: values.email,
+            role: (req_type === "edit_user" ? selectedRecord.role : req_type) || "View"
         }
 
         const db = getDatabase(app);
         let newUserRef = null;
-        if (req_type !== "edit_user") {
-            payload.password = values.password
-            payload.role = req_type === "add_admin" ? "Admin" : "View"
-            newUserRef = push(ref(db, "users"));
-        } else {
+        if (req_type === "edit_user") {
             newUserRef = ref(db, "users/" + selectedRecord.id);
+        } else {
+            payload.password = values.password
+            newUserRef = push(ref(db, "users"));
         }
 
-        set(newUserRef, payload).then(() => {
+        await set(newUserRef, payload).then(() => {
             message.success(`User ${req_type === "edit_user" ? "Updated" : "Registered"} Successfully !`);
-            ["add_admin", "edit_user"].includes(req_type) ? closeAddAdmin() : dispatch(setMenu("login"));
-            if (req_type !== "edit_user") {
-                dispatch(setUserData([...userData, payload]));
-            } else {
+            req_type ? onCloseRegistrationFormModal() : dispatch(setMenu("login"));
+            if (req_type === "edit_user") {
                 const updatedUserData = userData.map((user) =>
                     user.id === selectedRecord.id ? { ...user, ...payload } : user
                 );
                 dispatch(setUserData(updatedUserData));
+            } else {
+                dispatch(setUserData([...userData, { ...payload, id: newUserRef.key }]));
             }
         }).catch((err) => {
             message.error(err?.message);
@@ -49,7 +49,7 @@ const RegistrationForm = ({ req_type, closeAddAdmin, selectedRecord }) => {
 
     return (
         <div className="registration-container">
-            <h2>{req_type === "add_admin" ? "Add Admin" : req_type === "edit_user" ? "Edit User" : "Register"}</h2>
+            <h2>{req_type === "Admin" ? "Add Admin" : req_type === "View" ? "Add User" : req_type === "edit_user" ? "Edit User" : "Register"}</h2>
             <Form
                 name="registration"
                 layout="vertical"
@@ -90,7 +90,7 @@ const RegistrationForm = ({ req_type, closeAddAdmin, selectedRecord }) => {
                 </Form.Item>}
                 <Form.Item>
                     <Button type="primary" htmlType="submit" block>
-                        {["add_admin", "edit_user"].includes(req_type) ? "Submit" : "Register"}
+                        {req_type ? "Submit" : "Register"}
                     </Button>
                 </Form.Item>
             </Form>
