@@ -15,7 +15,8 @@ const RegistrationForm = ({ req_type, onCloseRegistrationFormModal, selectedReco
         const payload = {
             fullname: values.fullname,
             email: values.email,
-            role: (req_type === "edit_user" ? selectedRecord.role : req_type) || "View"
+            role: (req_type === "edit_user" ? selectedRecord.role : req_type) || "View",
+            password: (req_type === "edit_user" ? selectedRecord.password : values.password)
         }
 
         const db = getDatabase(app);
@@ -23,7 +24,6 @@ const RegistrationForm = ({ req_type, onCloseRegistrationFormModal, selectedReco
         if (req_type === "edit_user") {
             newUserRef = ref(db, "users/" + selectedRecord.id);
         } else {
-            payload.password = values.password
             newUserRef = push(ref(db, "users"));
         }
 
@@ -74,6 +74,15 @@ const RegistrationForm = ({ req_type, onCloseRegistrationFormModal, selectedReco
                     rules={[
                         { required: true, message: "Please enter your email!" },
                         { type: "email", message: "Enter a valid email!" },
+                        {
+                            validator: (_, value) => {
+                                const userEmailList = userData.map(user => user.email);
+                                if (value !== selectedRecord?.email && value && userEmailList?.includes(value)) {
+                                    return Promise.reject(new Error("User with this email already exists!"));
+                                }
+                                return Promise.resolve();
+                            }
+                        }
                     ]}
                 >
                     <Input placeholder="example@mail.com" />
