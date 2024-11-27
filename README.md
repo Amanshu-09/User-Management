@@ -1,8 +1,12 @@
-# React + Vite
+Designed Role-Based Access Control (RBAC) UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Tech stack used - Yarn, Vite, React, Redux, Redux-Toolkit, ANTD UI, Firebase
 
-Currently, two official plugins are available:
+There are three roles
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Owner - Only one can't be  Created, Edited or  Deleted but can be viewed by any user.
+Login Creds - {"email":"taklikaramanshu@gmail.com", "password":"Owner@1234"}
+
+Admin - Can be Created, Edited and Deleted by Owner, Can be viewed by any user.
+
+View - Can be created, Edited, and Deleted by Admin, Owner, Can be viewed by any user.
