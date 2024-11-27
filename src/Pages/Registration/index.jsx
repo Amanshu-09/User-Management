@@ -6,7 +6,7 @@ import { getDatabase, ref, push, set } from "firebase/database";
 import { setMenu, setUserData } from "../../Redux/slice";
 import { useDispatch, useSelector } from "react-redux";
 
-const RegistrationForm = () => {
+const RegistrationForm = ({ req_type, closeAddAdmin }) => {
     const dispatch = useDispatch();
     const { userData } = useSelector(state => state);
 
@@ -16,14 +16,14 @@ const RegistrationForm = () => {
             fullname: values.fullname,
             email: values.email,
             password: values.password,
-            role: "View"
+            role: req_type === "add_admin" ? "Admin" : "View"
         }
 
         const db = getDatabase(app);
         let newUserRef = push(ref(db, "users"));
         set(newUserRef, payload).then(() => {
             message.success("User Registered Successfully !");
-            dispatch(setMenu("login"));
+            ["add_admin"].includes(req_type) ? closeAddAdmin() : dispatch(setMenu("login"));
             dispatch(setUserData([...userData, payload]));
         }).catch((err) => {
             message.error(err?.message);
@@ -36,7 +36,7 @@ const RegistrationForm = () => {
 
     return (
         <div className="registration-container">
-            <h2>Register</h2>
+            <h2>{req_type === "add_admin" ? "Add Admin" : "Register"}</h2>
             <Form
                 name="registration"
                 layout="vertical"
@@ -73,7 +73,7 @@ const RegistrationForm = () => {
                 </Form.Item>
                 <Form.Item>
                     <Button type="primary" htmlType="submit" block>
-                        Register
+                        {["add_admin"].includes(req_type) ? "Submit" : "Register"}
                     </Button>
                 </Form.Item>
             </Form>

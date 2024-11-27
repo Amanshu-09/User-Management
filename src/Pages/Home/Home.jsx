@@ -1,9 +1,10 @@
-import { Button, Table } from "antd";
-import React from "react";
+import { Button, Modal, Spin, Table } from "antd";
+import React, { useState, Suspense } from "react";
 import { EditTwoTone, DeleteTwoTone, EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { useSelector } from "react-redux";
 import './index.scss';
 import ACL from "../../Components/ACL";
+const RegistrationForm = React.lazy(() => import('../Registration'));
 
 function Home() {
   let columns = [
@@ -41,6 +42,7 @@ function Home() {
   ]
 
   const { userData, currentUserData } = useSelector(state => state);
+  const [addModalOpen, setAddModalOpen] = useState(false);
 
   if (!["Owner", "Admin"].includes(currentUserData.role)) {
     columns = columns.filter(col => col.key !== "action");
@@ -53,6 +55,7 @@ function Home() {
       </h1>
       <ACL roles={["Owner"]}>
         <Button type="primary" onClick={() => {
+          setAddModalOpen(true);
         }} >Add Admin</Button>
       </ACL>
     </div>
@@ -63,6 +66,11 @@ function Home() {
         pagination={false}
       />
     </ACL>
+    <Modal open={addModalOpen} onCancel={() => { setAddModalOpen(false) }} footer={null} destroyOnClose={true} >
+      <Suspense fallback={<Spin />}>
+        <RegistrationForm req_type="add_admin" closeAddAdmin={() => { setAddModalOpen(false) }} />
+      </Suspense>
+    </Modal>
   </React.Fragment>);
 }
 
