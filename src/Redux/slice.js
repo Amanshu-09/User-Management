@@ -12,11 +12,14 @@ export const reduxDataSlice = createSlice({
     reducers: {
         setMenu: (state, action) => {
             state.page = action.payload
+        },
+        setUserData: (state, action) => {
+            state.userData = action.payload
         }
     },
 })
 
 // Action creators are generated for each case reducer function
-export const { setMenu } = reduxDataSlice.actions
+export const { setMenu, setUserData } = reduxDataSlice.actions
 
 export default reduxDataSlice.reducer
