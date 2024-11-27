@@ -1,9 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+const sessionUserData = JSON.parse(sessionStorage.getItem('userData')) || {}
+const user_logged_in = Object?.keys(sessionUserData)?.length !== 0
+
 const initialState = {
-    page: 'register',
+    page: user_logged_in ? 'home' : 'register',
     userData: [],
-    currentUserData: {}
+    currentUserData: user_logged_in ? sessionUserData : {}
 }
 
 export const reduxDataSlice = createSlice({
@@ -15,11 +18,14 @@ export const reduxDataSlice = createSlice({
         },
         setUserData: (state, action) => {
             state.userData = action.payload
-        }
+        },
+        setCurrentUserData: (state, action) => {
+            state.currentUserData = action.payload
+        },
     },
 })
 
 // Action creators are generated for each case reducer function
-export const { setMenu, setUserData } = reduxDataSlice.actions
+export const { setMenu, setUserData, setCurrentUserData } = reduxDataSlice.actions
 
 export default reduxDataSlice.reducer
