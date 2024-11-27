@@ -33,7 +33,10 @@ function Home() {
       dataIndex: "action",
       key: "action",
       render: (text, record) => <div className="user-table-actions">
-        {record.role === "Owner" ? <EditOutlined style={{ cursor: "not-allowed" }} /> : <EditTwoTone />}
+        {record.role === "Owner" ? <EditOutlined style={{ cursor: "not-allowed" }} /> : <EditTwoTone onClick={() => {
+          setSelectedData(record);
+          setAddModalOpen(true)
+        }} />}
         <ACL roles={record.role === "Admin" ? ["Owner"] : ["Owner", "Admin"]}>
           {record.role === "Owner" ? <DeleteOutlined style={{ cursor: "not-allowed" }} /> : <DeleteTwoTone twoToneColor="#eb0505" />}
         </ACL>
@@ -43,6 +46,7 @@ function Home() {
 
   const { userData, currentUserData } = useSelector(state => state);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [selectedData, setSelectedData] = useState({});
 
   if (!["Owner", "Admin"].includes(currentUserData.role)) {
     columns = columns.filter(col => col.key !== "action");
@@ -56,6 +60,7 @@ function Home() {
       <ACL roles={["Owner"]}>
         <Button type="primary" onClick={() => {
           setAddModalOpen(true);
+          setSelectedData({});
         }} >Add Admin</Button>
       </ACL>
     </div>
@@ -68,7 +73,8 @@ function Home() {
     </ACL>
     <Modal open={addModalOpen} onCancel={() => { setAddModalOpen(false) }} footer={null} destroyOnClose={true} >
       <Suspense fallback={<Spin />}>
-        <RegistrationForm req_type="add_admin" closeAddAdmin={() => { setAddModalOpen(false) }} />
+        <RegistrationForm req_type={Object.keys(selectedData)?.length ? "edit_user" : "add_admin"} closeAddAdmin={() => { setAddModalOpen(false) }}
+          selectedRecord={selectedData} />
       </Suspense>
     </Modal>
   </React.Fragment>);
