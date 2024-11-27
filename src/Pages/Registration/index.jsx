@@ -1,11 +1,33 @@
 import React from "react";
-import { Form, Input, Button } from "antd";
+import { Form, Input, Button, message } from "antd";
 import "./index.scss";
+import app from "../../Firebase/firebase";
+import { getDatabase, ref, push, set } from "firebase/database";
+import { setMenu, setUserData } from "../../Redux/slice";
+import { useDispatch, useSelector } from "react-redux";
 
 const RegistrationForm = () => {
+    const dispatch = useDispatch();
+    const { userData } = useSelector(state => state);
 
     const onFinish = (values) => {
         console.log("Success:", values);
+        const payload = {
+            fullname: values.fullname,
+            email: values.email,
+            password: values.password,
+            role: "View"
+        }
+
+        const db = getDatabase(app);
+        let newUserRef = push(ref(db, "users"));
+        set(newUserRef, payload).then(() => {
+            message.success("User Registered Successfully !");
+            dispatch(setMenu("login"));
+            dispatch(setUserData([...userData, payload]));
+        }).catch((err) => {
+            message.error(err?.message);
+        })
     };
 
     const onFinishFailed = (errorInfo) => {
